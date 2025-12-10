@@ -1,0 +1,50 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'prime-api'
+    environment: 'development'
+
+scrape_configs:
+  # FastAPI application metrics
+  - job_name: 'fastapi'
+    static_configs:
+      - targets: ['fastapi:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # Celery worker metrics (if exposed on a separate port)
+  - job_name: 'celery'
+    # Celery worker scraping requires exposing a metrics endpoint inside the
+    # Celery container. If you add an exporter or expose a metrics port,
+    # update the target below (service-name:port).
+    static_configs:
+      - targets: ['celery-worker-1:8001']
+    scrape_interval: 10s
+    scrape_timeout: 5s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'celery-worker'
+
+  # Redis exporter
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 15s
+    scrape_timeout: 5s
+
+  # VictoriaMetrics self-monitoring
+  - job_name: 'victoriametrics'
+    static_configs:
+      - targets: ['victoriametrics:8428']
+    metrics_path: '/metrics'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+rule_files:
+  - '/etc/prometheus/alerts.yml'

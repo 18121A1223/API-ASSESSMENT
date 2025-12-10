@@ -1,0 +1,152 @@
+version: '3.8'
+
+services:
+  # Redis - Message broker and cache
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    networks:
+      - app
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: redis-server --appendonly yes
+
+  # FastAPI Application
+  fastapi:
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    container_name: fastapi
+    ports:
+      - "8000:8000"
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      OTEL_ENABLED: "true"
+    volumes:
+      - .:/app
+    networks:
+      - app
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    command: python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Celery Worker 1 (with threads pool)
+  celery-worker-1:
+    build:
+      context: .
+      dockerfile: Dockerfile.celery
+    container_name: celery-worker-1
+    ports:
+      - "8001:8001"
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      OTEL_ENABLED: "true"
+    volumes:
+      - .:/app
+    networks:
+      - app
+    depends_on:
+      redis:
+        condition: service_healthy
+    # Run metrics exporter which starts both Prometheus metrics server (port 8001) and Celery worker
+    command: python celery_metrics_exporter.py
+
+  # VictoriaMetrics - Time-series database
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:latest
+    container_name: victoriametrics
+    ports:
+      - "8428:8428"
+    volumes:
+      - vmdata:/storage
+    networks:
+      - app
+    command:
+      - "--storageDataPath=/storage"
+      - "--httpListenAddr=:8428"
+      - "--retentionPeriod=30d"
+
+  # Prometheus - Metrics scraper
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - promdata:/prometheus
+    networks:
+      - app
+    depends_on:
+      victoriametrics:
+        condition: service_started
+      fastapi:
+        condition: service_started
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=30d"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+
+  # Grafana - Dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_PATHS_PROVISIONING: /etc/grafana/provisioning
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafanadata:/var/lib/grafana
+    networks:
+      - app
+    depends_on:
+      - victoriametrics
+      - prometheus
+
+  # Redis Exporter - Export Redis metrics
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: redis-exporter
+    ports:
+      - "9121:9121"
+    environment:
+      REDIS_ADDR: redis:6379
+    networks:
+      - app
+    depends_on:
+      redis:
+        condition: service_healthy
+
+networks:
+  app:
+    driver: bridge
+
+volumes:
+  redisdata:
+  vmdata:
+  promdata:
+  grafanadata:

@@ -1,6 +1,6 @@
 # API-ASSESSMENT: FastAPI + Celery Prime Numbers Service
 
-A FastAPI application that computes the first N prime numbers using Celery background tasks and Redis for caching and state management.
+A FastAPI application that computes the first N prime numbers using Celery background tasks and Redis for caching and state management, with comprehensive observability via OpenTelemetry, Prometheus, VictoriaMetrics, and Grafana.
 
 ## Overview
 
@@ -10,53 +10,312 @@ This project demonstrates:
 - **Redis** for task queue, result storage, and prime number caching
 - **Optimized prime computation** with smart caching (reuses previously computed primes)
 - **Request tracking** with unique IDs and comprehensive logging
+- **OpenTelemetry instrumentation** for metrics, traces, and logs
+- **Prometheus exporters** for metrics collection
+- **VictoriaMetrics** for time-series data storage
+- **Grafana dashboards** for visualization and monitoring
 
 ## Quick Start
 
-### 1. Start Redis (Docker recommended)
+### Manual Setup
 
 ```powershell
-docker run -p 6379:6379 --name redis -d redis:7
-```
-
-Or install Redis natively on Windows / use a cloud Redis instance.
-
-### 2. Create & Activate Virtual Environment
-
-Use Python 3.11 or 3.12 (recommended for best compatibility with prebuilt pydantic wheels):
-
-```powershell
+# 1. Create virtual environment
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt
-```
 
-### 3. Start Celery Worker
+# 2. Start Docker Compose stack
+docker-compose -f docker-compose.monitoring.yml up -d
 
-Run in a separate terminal (from project root):
-
-```powershell
-celery -A celery_app worker --loglevel=info
-```
-
-**Note:** On Windows, the worker uses `solo` pool by default (single-threaded). This avoids multiprocessing issues. On Linux/WSL, you can switch to `prefork` or `threads` pool by editing `celery_app.py`.
-
-### 4. Start FastAPI Application
-
-Run in another terminal:
-
-```powershell
+# 3. Start FastAPI (Terminal 1)
 python -m uvicorn main:app --reload
+
+# 4. Start Celery Worker (Terminal 2)
+celery -A celery_app worker --loglevel=info
+
+# 5. Access services
+# Grafana:     http://localhost:3000 (admin/admin)
+# API Docs:    http://localhost:8000/docs
+# Prometheus:  http://localhost:9090
+# VictoriaMetrics: http://localhost:8428
 ```
 
-The app will be available at `http://localhost:8000`
+See `RUN.md` for detailed step-by-step instructions.
 
-**API Documentation:**
-- Interactive docs: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
+---
+## 📡 Service URLs & Access
+
+### Running Services with Docker Compose
+
+Once `docker-compose up -d` is running, access these services:
+
+| Service | URL | Purpose | Credentials |
+|---------|-----|---------|-------------|
+| **FastAPI App** | http://localhost:8000 | Main application - submit tasks | N/A |
+| **FastAPI Docs** | http://localhost:8000/docs | Interactive API documentation (Swagger) | N/A |
+| **FastAPI Health** | http://localhost:8000/health | Health check | N/A |
+| **Grafana Dashboards** | http://localhost:3000 | Visualization & monitoring | admin / admin |
+| **Prometheus** | http://localhost:9090 | Metrics query interface | N/A |
+| **Prometheus Targets** | http://localhost:9090/targets | Scrape targets status | N/A |
+| **VictoriaMetrics API** | http://localhost:8428 | Time-series database API | N/A |
+| **Redis Metrics** | http://localhost:9121/metrics | Redis metrics (Prometheus format) | N/A |
+
+### Common API Endpoints
+
+**Submit a task to compute primes:**
+```bash
+POST http://localhost:8000/tasks
+Content-Type: application/json
+
+{"n": 100}
+```
+
+**Check task status:**
+```bash
+GET http://localhost:8000/tasks/{request_id}
+```
+
+**Get metrics summary:**
+```bash
+GET http://localhost:8000/api/metrics/summary
+```
+
+**View all metrics:**
+```bash
+GET http://localhost:8000/api/metrics/all
+```
+
+**Grafana Login:**
+- Username: `admin`
+- Password: `admin`
+- Access dashboards: Prime API Metrics, Redis Metrics
+
+
+## Observability & Monitoring Architecture
+
+### Complete Observability Stack
+
+#### **1. OpenTelemetry (OTEL) Instrumentation**
+
+Automatic tracing and metrics collection for:
+- **FastAPI**: Request path, method, status code, duration
+- **Celery**: Task name, status, execution time, arguments
+- **Redis**: Command type, latency, success/failure
+- **HTTP Requests**: Outbound request tracking
+
+Location: `observability.py`
+
+#### **2. Custom Prometheus Metrics**
+
+Application-specific metrics tracked:
+
+| Metric | Type | Purpose |
+|--------|------|---------|
+| `prime_task_submissions_total` | Counter | Tasks submitted (by status: started, completed, failed) |
+| `prime_task_duration_seconds` | Histogram | Task execution time (buckets: 1s, 5s, 10s, 30s, 60s, 120s, 300s, 600s) |
+| `prime_numbers_computed_total` | Counter | Primes computed vs cached |
+| `prime_cache_hits_total` | Counter | Successful cache retrievals |
+| `prime_cache_misses_total` | Counter | Cache misses requiring computation |
+| `prime_active_computations` | Gauge | Currently running tasks |
+| `redis_operations_total` | Counter | Redis operations by type and status |
+| `api_requests_total` | Counter | HTTP requests by method/endpoint/status |
+| `api_request_duration_seconds` | Histogram | API latency (buckets: 0.01s to 5s) |
+
+Location: `metrics.py`
+
+#### **3. Prometheus**
+
+**What it does:**
+- Scrapes metrics from FastAPI (`/metrics` endpoint)
+- Collects metrics from Celery, Redis Exporter, and VictoriaMetrics
+- Stores time-series data (default: 15 days)
+- Evaluates alert rules
+- Provides query interface (PromQL)
+
+**Access:** http://localhost:9090
+
+**Key sections:**
+- **Targets** (http://localhost:9090/targets) - Shows all scrape targets (FastAPI, Celery, Redis Exporter, VictoriaMetrics)
+- **Graph** (http://localhost:9090/graph) - Query metrics with PromQL
+- **Alerts** (http://localhost:9090/alerts) - View alert status
+- **Status** (http://localhost:9090/status) - Configuration details
+
+**Configured scrape targets:**
+```
+fastapi:8000/metrics       (15s interval)
+celery:8001                (15s interval)
+redis-exporter:9121        (15s interval)
+victoriametrics:8428/metrics (15s interval)
+```
+
+**Alert rules configured:**
+- HighTaskFailureRate (> 10% failures in 5m)
+- SlowTaskExecution (p95 duration > 60s)
+- LowCacheHitRate (< 50% in 10m)
+- RedisHighErrorRate (> 1% errors in 5m)
+- HighAPIErrorRate (> 5% 5xx in 5m)
+
+#### **4. VictoriaMetrics**
+
+**What it does:**
+- Long-term metrics storage (30-day retention)
+- Optimized time-series database
+- Complements/replaces Prometheus storage
+- High compression ratio (1GB+ data in minimal space)
+
+**Access:** http://localhost:8428
+
+**Key sections:**
+- **vminsert** - Metrics ingestion
+- **vmselect** - Metrics querying
+- **vmstorage** - Data storage
+- **Query** (http://localhost:8428/select/0/prometheus/graph) - Same PromQL as Prometheus
+
+#### **5. Grafana**
+
+**What it does:**
+- Visualization platform
+- Pre-built dashboards for monitoring
+- Real-time data display
+- Alert annotations
+- User-friendly dashboard creation
+
+**Access:** http://localhost:3000
+**Login:** admin / admin
+
+**Pre-configured datasources:**
+- Prometheus (primary metrics source)
+- VictoriaMetrics (secondary/long-term storage)
+
+**Pre-built dashboards:**
+
+1. **Prime API Metrics Dashboard** (6 panels)
+   - Task Submission & Completion Rate (timeseries)
+   - Cache Hit Rate % (gauge with thresholds)
+   - Task Duration Percentiles (p50, p95, p99)
+   - Active Computations (stat)
+   - Task Status Distribution (stacked area)
+   - Primes Computed vs Cached (stacked area)
+
+2. **Prime API Overview** (alternative view)
+   - Similar panels focused on API health metrics
+
+3. **Redis Metrics Dashboard** (5 panels)
+   - Connected Clients (gauge)
+   - Used Memory (gauge)
+   - Commands Per Second (rate)
+   - Keys per Database (breakdown)
+   - Command Latency (histogram)
+
+**Where to find what:**
+- Click "Dashboards" (left sidebar) → Select dashboard
+- Use "Explore" for ad-hoc queries
+- Check "Alerts" for active alerts
+- View "Annotations" for events
+
+#### **6. Redis Exporter**
+
+**What it does:**
+- Exports Redis server metrics to Prometheus format
+- Monitors: memory, clients, commands, latency, replication
+
+**Metrics exported:**
+- `redis_connected_clients` - Active client connections
+- `redis_used_memory` - Memory usage in bytes
+- `redis_commands_processed_total` - Total commands executed
+- `redis_db_keys` - Keys per database
+- `redis_commands_duration_seconds` - Command latency
+
+**Access:** http://localhost:9121 (Prometheus format)
+
+---
+
+## JSON Metrics API
+
+Custom `/api/metrics/*` endpoints for JSON-based monitoring:
+
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /api/metrics/health` | System health check (Redis, Prometheus) |
+| `GET /api/metrics/summary` | High-level overview (largest_n, cached_primes, active tasks) |
+| `GET /api/metrics/cache-stats` | Cache hit/miss rates with percentages |
+| `GET /api/metrics/task-stats` | Task status breakdown (pending, done, failed) |
+| `GET /api/metrics/redis-stats` | Redis server health & memory |
+| `GET /api/metrics/performance` | Raw Prometheus metrics from registry |
+| `GET /api/metrics/all` | All metrics combined |
+
+**Example:**
+```powershell
+curl http://localhost:8000/api/metrics/summary
+```
+
+---
+
+## API Endpoints
+
+### Task Submission
+
+**POST /tasks**
+
+Submit a job to compute first N primes.
+
+```bash
+curl -X POST http://localhost:8000/tasks \
+  -H "Content-Type: application/json" \
+  -d '{"n": 100}'
+```
+
+**Response:**
+```json
+{
+  "request_id": "a1b2c3d4e5f6"
+}
+```
+
+### Task Status
+
+**GET /tasks/{request_id}**
+
+Check task status and result.
+
+```bash
+curl http://localhost:8000/tasks/a1b2c3d4e5f6
+```
+
+**Responses:**
+- `pending` - Queued, waiting to process
+- `processing` - Celery worker executing
+- `done` - Completed, result available
+- `failed` - Error occurred
+
+### Health Check
+
+**GET /health**
+
+```bash
+curl http://localhost:8000/health
+```
+
+### Prometheus Metrics
+
+**GET /metrics**
+
+Raw Prometheus format metrics.
+
+```bash
+curl http://localhost:8000/metrics
+```
+
+### API Documentation
+
+- **Swagger UI:** http://localhost:8000/docs
+- **ReDoc:** http://localhost:8000/redoc
+
+---
 
 ## Configuration
+
 
 ### Redis URL
 
@@ -226,61 +485,6 @@ API-ASSESSMENT/
 │   ├── prime_service.py       # Prime computation with caching
 │   └── __init__.py
 └── repositories/              # (Data access layer - currently empty)
-```
-
-## Troubleshooting
-
-### pip install fails with pydantic-core Rust build error
-
-**Error:**
-```
-error: subprocess-exited-with-error
-× Preparing metadata (pyproject.toml) did not run successfully.
-```
-
-**Solution:** Use Python 3.11/3.12 (prebuilt pydantic wheels available):
-
-```powershell
-py -3.11 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-```
-
-Or install Rust + MSVC Build Tools to compile from source.
-
-### Celery worker fails with PermissionError on Windows
-
-**Error:**
-```
-PermissionError(13, 'Access is denied')
-```
-
-**Solution:** Already fixed in `celery_app.py` — uses `solo` pool by default. Just run:
-
-```powershell
-celery -A celery_app worker --loglevel=info
-```
-
-### uvicorn command not found
-
-**Solution:** Run as a module inside the venv:
-
-```powershell
-python -m uvicorn main:app --reload
-```
-
-### Redis connection refused
-
-**Error:**
-```
-ConnectionError: Error -2 connecting to localhost:6379. Name or service not known.
-```
-
-**Solution:** Verify Redis is running:
-
-```powershell
-docker ps  # check if container is running
-redis-cli ping  # test connection (if Redis installed natively)
 ```
 
 ## Notes & Future Improvements

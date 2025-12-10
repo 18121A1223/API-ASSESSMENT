@@ -1,21 +1,17 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
 import uuid
 import json
 import logging
 from typing import Optional
 from services.redis_client import get_redis_client
 from celery_app import compute_primes_task
+from models.task import CreateTaskRequest, TaskStatusResponse
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 logger = logging.getLogger(__name__)
 
 # TTL for request state in Redis (10 minutes)
 REQUEST_TTL_SECONDS = 600
-
-
-class CreateTaskRequest(BaseModel):
-    n: int = Field(..., gt=0, description="Number of primes to compute")
 
 
 @router.post("", status_code=202)
