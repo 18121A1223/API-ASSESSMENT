@@ -149,6 +149,72 @@ redis-exporter:9121        (15s interval)
 victoriametrics:8428/metrics (15s interval)
 ```
 
+---
+
+## Load testing with Locust
+
+This project includes a Locust test file at `monitoring/locust/locustfile.py` that:
+- Submits compute tasks to `POST /tasks` and stores the returned `request_id`;
+- Polls `GET /tasks/{request_id}` until completion;
+- Occasionally polls `/metrics`.
+
+Two ways to run Locust are supported:
+
+1) Run Locust as a Docker service (recommended for consistency)
+
+  - The `docker-compose.yml` includes a `locust` service that mounts `monitoring/locust` and exposes the Locust web UI on port `8089`.
+
+  Start the full stack including Locust:
+  ```powershell
+  cd "c:\Users\Dharaneshwar\Desktop\Assessment\wealthy\API-ASSESSMENT"
+  docker compose up -d
+  ```
+
+  Open the Locust web UI at: http://localhost:8089
+  - Enter the number of users and spawn rate, then click **Start swarming**.
+
+  To stop Locust only:
+  ```powershell
+  docker compose stop locust
+  ```
+
+2) Run Locust locally (web UI) — useful for interactive debugging
+
+  - Install Locust locally (recommended inside a virtualenv):
+  ```powershell
+  python -m venv .venv
+  .\.venv\Scripts\Activate.ps1
+  pip install locust
+  ```
+
+  - Run Locust pointing at the app running in Docker Compose:
+  ```powershell
+  locust -f monitoring/locust/locustfile.py --host http://localhost:8000
+  ```
+
+  - Open http://localhost:8089 and start the test.
+
+Headless runs (CI / automation)
+--------------------------------
+If you want to execute Locust headless (no web UI) and save CSV results:
+
+```powershell
+locust -f monitoring/locust/locustfile.py --headless -u 50 -r 5 --run-time 5m --host http://localhost:8000 --csv=locust-output
+```
+
+Notes & tips
+- If Locust runs inside Docker and needs to reach services in the Compose network, use `--host http://fastapi` (service name) instead of `localhost`.
+- The included `locustfile.py` polls task status; avoid extremely aggressive polling per user if you want to simulate realistic client behavior.
+- Monitor `fastapi` logs during load testing:
+
+```powershell
+docker logs -f fastapi
+```
+
+If you'd like, I can:
+- Add environment variables to the `locust` service in `docker-compose.yml` to make `-u`, `-r`, and `--run-time` configurable without editing the compose file.
+- Add a short `monitoring/locust/README.md` with these instructions.
+
 **Alert rules configured:**
 - HighTaskFailureRate (> 10% failures in 5m)
 - SlowTaskExecution (p95 duration > 60s)

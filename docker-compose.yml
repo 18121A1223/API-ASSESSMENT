@@ -141,6 +141,22 @@ services:
       redis:
         condition: service_healthy
 
+  # Locust - Load testing (web UI)
+  locust:
+    image: locustio/locust:2.16.0
+    container_name: locust
+    ports:
+      - "8089:8089"
+    volumes:
+      - ./monitoring/locust:/locust:ro
+    networks:
+      - app
+    depends_on:
+      fastapi:
+        condition: service_healthy
+    # Run Locust web UI and bind to all interfaces inside the container
+    command: -f /locust/locustfile.py --host http://fastapi:8000 --web-host 0.0.0.0
+
 networks:
   app:
     driver: bridge
