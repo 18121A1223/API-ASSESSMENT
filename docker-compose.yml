@@ -157,6 +157,21 @@ services:
     # Run Locust web UI and bind to all interfaces inside the container
     command: -f /locust/locustfile.py --host http://fastapi:8000 --web-host 0.0.0.0
 
+  # Load generator - lightweight periodic POSTs to keep metrics active
+  load-generator:
+    image: curlimages/curl:8.2.1
+    container_name: load-generator
+    restart: unless-stopped
+    networks:
+      - app
+    depends_on:
+      fastapi:
+        condition: service_healthy
+    # Send a JSON POST to /tasks every 5 seconds to generate metrics for Prometheus
+    # Use a larger `n` so Celery spends more time computing (visible active computations)
+    command: >
+      sh -c 'while true; do curl -s -X POST -H "Content-Type: application/json" -d "{\"n\":110500}" http://fastapi:8000/tasks >/dev/null 2>&1 || true; sleep 5; done'
+
 networks:
   app:
     driver: bridge

@@ -4,7 +4,7 @@ import json
 from celery import Celery
 from services.redis_client import get_redis_client
 from services.prime_service import compute_first_n_primes
-from metrics import task_submissions_total
+from metrics import task_submissions_total, active_computations
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -38,7 +38,8 @@ def compute_primes_task(self, request_id: str, n: int):
     key = f"request:{request_id}"
     try:
         task_submissions_total.labels(status="started").inc()
-        
+        # Track an active computation when the worker starts processing
+        active_computations.inc()
         # mark processing and refresh TTL
         redis_client.setex(key, REQUEST_TTL_SECONDS, json.dumps({"n": n, "status": "processing", "result": None}))
 
@@ -49,10 +50,12 @@ def compute_primes_task(self, request_id: str, n: int):
         logger.info(f"[{request_id}] Task done, computed {len(primes)} primes")
         
         task_submissions_total.labels(status="completed").inc()
+        active_computations.dec()  # Decrement when task completes
         return primes
     except Exception as exc:
         logger.exception(f"[{request_id}] Task failed: {exc}")
         redis_client.setex(key, REQUEST_TTL_SECONDS, json.dumps({"n": n, "status": "failed", "result": None, "error": str(exc)}))
         
         task_submissions_total.labels(status="failed").inc()
+        active_computations.dec()  # Decrement when task fails
         raise

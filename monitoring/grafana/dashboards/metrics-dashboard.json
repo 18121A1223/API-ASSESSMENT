@@ -25,7 +25,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "PBFA97CFB590B2093"
       },
       "fieldConfig": {
         "defaults": {
@@ -98,14 +98,14 @@
         {
           "datasourceUid": "PBFA97CFB590B2093",
           "expr": "rate(prime_task_submissions_total{status=\"started\"}[5m])",
-          "refId": "A",
-          "legendFormat": "Task Submission Rate"
+          "legendFormat": "Task Submission Rate",
+          "refId": "A"
         },
         {
           "datasourceUid": "PBFA97CFB590B2093",
           "expr": "rate(prime_task_submissions_total{status=\"completed\"}[5m])",
-          "refId": "B",
-          "legendFormat": "Task Completion Rate"
+          "legendFormat": "Task Completion Rate",
+          "refId": "B"
         }
       ],
       "title": "Task Submission & Completion Rate",
@@ -114,7 +114,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "PBFA97CFB590B2093"
       },
       "fieldConfig": {
         "defaults": {
@@ -162,7 +162,7 @@
           "values": false
         },
         "showThresholdLabels": false,
-        "showThresholdMarkers": true,
+        "showThresholdMarels": true,
         "text": {}
       },
       "pluginVersion": "10.0.0",
@@ -180,112 +180,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "tooltip": false,
-              "viz": false,
-              "legend": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 60
-              }
-            ]
-          },
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 8
-      },
-      "id": 3,
-      "options": {
-        "legend": {
-          "calcs": [
-            "mean",
-            "max",
-            "min"
-          ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {
-          "datasourceUid": "PBFA97CFB590B2093",
-          "expr": "histogram_quantile(0.95, rate(prime_task_duration_seconds_bucket[5m]))",
-          "legendFormat": "p95",
-          "refId": "A"
-        },
-        {
-          "datasourceUid": "PBFA97CFB590B2093",
-          "expr": "histogram_quantile(0.50, rate(prime_task_duration_seconds_bucket[5m]))",
-          "legendFormat": "p50",
-          "refId": "B"
-        },
-        {
-          "datasourceUid": "PBFA97CFB590B2093",
-          "expr": "histogram_quantile(0.99, rate(prime_task_duration_seconds_bucket[5m]))",
-          "legendFormat": "p99",
-          "refId": "C"
-        }
-      ],
-      "title": "Task Duration Percentiles",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "PBFA97CFB590B2093"
       },
       "fieldConfig": {
         "defaults": {
@@ -308,7 +203,7 @@
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 12,
+        "x": 0,
         "y": 8
       },
       "id": 4,
@@ -331,7 +226,7 @@
       "targets": [
         {
           "datasourceUid": "PBFA97CFB590B2093",
-          "expr": "prime_active_computations",
+          "expr": "sum(prime_active_computations)",
           "refId": "A"
         }
       ],
@@ -341,7 +236,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus"
+        "uid": "PBFA97CFB590B2093"
       },
       "fieldConfig": {
         "defaults": {
@@ -354,8 +249,8 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
-            "drawStyle": "bars",
-            "fillOpacity": 100,
+            "drawStyle": "line",
+            "fillOpacity": 0,
             "gradientMode": "none",
             "hideFrom": {
               "tooltip": false,
@@ -368,100 +263,11 @@
             "scaleDistribution": {
               "type": "linear"
             },
-            "showPoints": "never",
+            "showPoints": "auto",
             "spanNulls": true,
             "stacking": {
               "group": "A",
-              "mode": "percent"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 16
-      },
-      "id": 5,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasourceUid": "PBFA97CFB590B2093",
-          "expr": "rate(prime_task_submissions_total{status=\"completed\"}[5m])",
-          "legendFormat": "Completed",
-          "refId": "A"
-        },
-        {
-          "datasourceUid": "PBFA97CFB590B2093",
-          "expr": "rate(prime_task_submissions_total{status=\"failed\"}[5m])",
-          "legendFormat": "Failed",
-          "refId": "B"
-        }
-      ],
-      "title": "Task Status Distribution",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "bars",
-            "fillOpacity": 100,
-            "gradientMode": "none",
-            "hideFrom": {
-              "tooltip": false,
-              "viz": false,
-              "legend": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "percent"
+              "mode": "none"
             },
             "thresholdsStyle": {
               "mode": "off"
@@ -484,6 +290,95 @@
         "h": 8,
         "w": 12,
         "x": 12,
+        "y": 8
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasourceUid": "PBFA97CFB590B2093",
+          "expr": "rate(prime_cache_hits_total[5m])",
+          "legendFormat": "Cache Hits",
+          "refId": "A"
+        },
+        {
+          "datasourceUid": "PBFA97CFB590B2093",
+          "expr": "rate(prime_cache_misses_total[5m])",
+          "legendFormat": "Cache Misses",
+          "refId": "B"
+        }
+      ],
+      "title": "Cache Activity",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 100,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "percent"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
         "y": 16
       },
       "id": 6,
@@ -502,18 +397,12 @@
       "targets": [
         {
           "datasourceUid": "PBFA97CFB590B2093",
-          "expr": "rate(prime_numbers_computed_total{computation_type=\"computed\"}[5m])",
-          "legendFormat": "Newly Computed",
+          "expr": "rate(prime_numbers_computed_total[5m])",
+          "legendFormat": "Primes Computed",
           "refId": "A"
-        },
-        {
-          "datasourceUid": "PBFA97CFB590B2093",
-          "expr": "rate(prime_numbers_computed_total{computation_type=\"cached\"}[5m])",
-          "legendFormat": "From Cache",
-          "refId": "B"
         }
       ],
-      "title": "Primes: Computed vs Cached",
+      "title": "Primes Computed Rate",
       "type": "timeseries"
     }
   ],
@@ -528,7 +417,7 @@
     "list": []
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-5m",
     "to": "now"
   },
   "timepicker": {},

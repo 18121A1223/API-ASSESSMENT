@@ -6,7 +6,7 @@ from typing import List
 from services.redis_client import get_redis_client
 from metrics import (
     cache_hits_total, cache_misses_total, task_duration_seconds,
-    primes_computed_total, active_computations
+    primes_computed_total
 )
 
 logger = logging.getLogger(__name__)
@@ -64,7 +64,6 @@ def compute_first_n_primes(n: int, request_id: str = ""):
     """
     start_time = time.time()
     redis_client = get_redis_client()
-    active_computations.inc()
 
     try:
         # Check if we already have all primes for this N
@@ -119,4 +118,4 @@ def compute_first_n_primes(n: int, request_id: str = ""):
         
         return primes[:n]
     finally:
-        active_computations.dec()
+        pass
