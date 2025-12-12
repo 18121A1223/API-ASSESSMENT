@@ -1,4 +1,5 @@
 from locust import HttpUser, task, between
+import random
 
 
 class PrimeApiUser(HttpUser):
@@ -15,7 +16,7 @@ class PrimeApiUser(HttpUser):
     @task(6)
     def submit_task(self):
         # Submit a compute request — adjust n as needed
-        with self.client.post("/tasks", json={"n": 100}, catch_response=True) as resp:
+        with self.client.post("/tasks", json={"n": random.randint(1, 1000)}, catch_response=True) as resp:
             if resp.status_code == 202:
                 try:
                     body = resp.json()
