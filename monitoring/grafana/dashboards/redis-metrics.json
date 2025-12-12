@@ -69,7 +69,7 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "datasourceUid": "PBFA97CFB590B2093",
+          "datasourceUid": "P4169E866C3094E38",
           "expr": "redis_connected_clients",
           "refId": "A"
         }
@@ -120,7 +120,7 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "datasourceUid": "PBFA97CFB590B2093",
+          "datasourceUid": "P4169E866C3094E38",
           "expr": "redis_used_memory",
           "refId": "A"
         }
@@ -198,7 +198,7 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "datasourceUid": "PBFA97CFB590B2093",
+          "datasourceUid": "P4169E866C3094E38",
           "expr": "rate(redis_commands_processed_total[5m])",
           "legendFormat": "Total Commands",
           "refId": "A"
@@ -279,7 +279,7 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "datasourceUid": "PBFA97CFB590B2093",
+          "datasourceUid": "P4169E866C3094E38",
           "expr": "redis_db_keys",
           "legendFormat": "Keys in DB {{db}}",
           "refId": "A"
@@ -358,7 +358,7 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "datasourceUid": "PBFA97CFB590B2093",
+          "datasourceUid": "P4169E866C3094E38",
           "expr": "rate(redis_commands_duration_seconds_total[5m]) * 1000",
           "legendFormat": "Avg Latency",
           "refId": "A"
@@ -387,3 +387,4 @@
   "uid": "redis-metrics",
   "version": 1
 }
+

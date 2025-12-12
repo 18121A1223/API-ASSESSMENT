@@ -102,8 +102,8 @@
           "refId": "A"
         },
         {
-          "datasourceUid": "PBFA97CFB590B2093",
-          "expr": "rate(prime_task_submissions_total{status=\"completed\"}[5m])",
+          "datasourceUid": "P4169E866C3094E38",
+          "expr": "rate(prime_task_submissions_total{status="started|completed"}[5m])",
           "legendFormat": "Task Completion Rate",
           "refId": "B"
         }
@@ -168,7 +168,7 @@
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasourceUid": "PBFA97CFB590B2093",
+          "datasourceUid": "P4169E866C3094E38",
           "expr": "(sum(rate(prime_cache_hits_total[5m])) / (sum(rate(prime_cache_hits_total[5m])) + sum(rate(prime_cache_misses_total[5m])))) * 100",
           "refId": "A",
           "legendFormat": "Cache Hit Rate"
@@ -225,7 +225,7 @@
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "datasourceUid": "PBFA97CFB590B2093",
+          "datasourceUid": "P4169E866C3094E38",
           "expr": "sum(prime_active_computations)",
           "refId": "A"
         }
@@ -307,13 +307,13 @@
       },
       "targets": [
         {
-          "datasourceUid": "PBFA97CFB590B2093",
+          "datasourceUid": "P4169E866C3094E38",
           "expr": "rate(prime_cache_hits_total[5m])",
           "legendFormat": "Cache Hits",
           "refId": "A"
         },
         {
-          "datasourceUid": "PBFA97CFB590B2093",
+          "datasourceUid": "P4169E866C3094E38",
           "expr": "rate(prime_cache_misses_total[5m])",
           "legendFormat": "Cache Misses",
           "refId": "B"
@@ -396,7 +396,7 @@
       },
       "targets": [
         {
-          "datasourceUid": "PBFA97CFB590B2093",
+          "datasourceUid": "P4169E866C3094E38",
           "expr": "rate(prime_numbers_computed_total[5m])",
           "legendFormat": "Primes Computed",
           "refId": "A"

@@ -92,7 +92,7 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "datasourceUid": "PBFA97CFB590B2093",
+          "datasourceUid": "P4169E866C3094E38",
           "expr": "rate(prime_task_submissions_total[5m])",
           "refId": "A"
         }
@@ -151,7 +151,7 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "datasourceUid": "PBFA97CFB590B2093",
+          "datasourceUid": "P4169E866C3094E38",
           "expr": "prime_active_computations",
           "refId": "A"
         }
@@ -233,13 +233,13 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "datasourceUid": "PBFA97CFB590B2093",
+          "datasourceUid": "P4169E866C3094E38",
           "expr": "histogram_quantile(0.95, rate(prime_task_duration_seconds_bucket[5m]))",
           "legendFormat": "p95",
           "refId": "A"
         },
         {
-          "datasourceUid": "PBFA97CFB590B2093",
+          "datasourceUid": "P4169E866C3094E38",
           "expr": "histogram_quantile(0.5, rate(prime_task_duration_seconds_bucket[5m]))",
           "legendFormat": "p50",
           "refId": "B"
@@ -318,13 +318,13 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "datasourceUid": "PBFA97CFB590B2093",
+          "datasourceUid": "P4169E866C3094E38",
           "expr": "rate(prime_task_submissions_total{status=\"completed\"}[5m])",
           "legendFormat": "Completed",
           "refId": "A"
         },
         {
-          "datasourceUid": "PBFA97CFB590B2093",
+          "datasourceUid": "P4169E866C3094E38",
           "expr": "rate(prime_task_submissions_total{status=\"failed\"}[5m])",
           "legendFormat": "Failed",
           "refId": "B"
@@ -403,13 +403,13 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "datasourceUid": "PBFA97CFB590B2093",
+          "datasourceUid": "P4169E866C3094E38",
           "expr": "rate(prime_cache_hits_total[5m])",
           "legendFormat": "Cache Hits",
           "refId": "A"
         },
         {
-          "datasourceUid": "PBFA97CFB590B2093",
+          "datasourceUid": "P4169E866C3094E38",
           "expr": "rate(prime_cache_misses_total[5m])",
           "legendFormat": "Cache Misses",
           "refId": "B"
@@ -488,13 +488,13 @@
       "pluginVersion": "8.0.0",
       "targets": [
         {
-          "datasourceUid": "PBFA97CFB590B2093",
+          "datasourceUid": "P4169E866C3094E38",
           "expr": "rate(prime_numbers_computed_total{computation_type=\"computed\"}[5m])",
           "legendFormat": "Newly Computed",
           "refId": "A"
         },
         {
-          "datasourceUid": "PBFA97CFB590B2093",
+          "datasourceUid": "P4169E866C3094E38",
           "expr": "rate(prime_numbers_computed_total{computation_type=\"cached\"}[5m])",
           "legendFormat": "From Cache",
           "refId": "B"
@@ -525,3 +525,4 @@
   "uid": "prime-api-overview",
   "version": 1
 }
+

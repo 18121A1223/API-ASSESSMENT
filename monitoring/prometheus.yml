@@ -41,6 +41,15 @@ scrape_configs:
       - targets: ['victoriametrics:8428']
     metrics_path: '/metrics'
 
+# Send all scraped metrics to VictoriaMetrics for long-term storage and querying
+remote_write:
+  - url: http://victoriametrics:8428/api/v1/write
+    queue_config:
+      capacity: 10000
+      max_shards: 200
+      min_shards: 1
+      max_samples_per_send: 500
+
 alerting:
   alertmanagers:
     - static_configs:
